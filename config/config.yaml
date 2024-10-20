@@ -1,0 +1,7 @@
+service:
+  address: :1234
+  name: template
+  development: true
+  shutdownTimeout: 5s
+# TODO: add configuration structs for any infrastructure
+#   you need (DB, message broker, metrics etc.)
