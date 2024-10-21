@@ -1,0 +1,19 @@
+version: '3.9'
+name: "leino-template"
+
+services:
+  template:
+    container_name: template
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    restart: "unless-stopped"
+    ports:
+      - "1234:1234"
+    command:
+      - ./service
+    networks:
+      - leino-template
+
+networks:
+  leino-template:

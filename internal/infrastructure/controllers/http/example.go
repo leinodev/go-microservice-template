@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"encoding/json"
+	"github.com/gofiber/fiber/v2"
 	"github.com/leinodev/go-microservice-template/internal/core/models"
 	"net/http"
 	"strconv"
@@ -10,32 +10,25 @@ import (
 
 type (
 	ExampleHandler struct {
-		core ExampleCore
+		core exampleCore
 	}
-	ExampleCore interface {
-		Execute(ctx context.Context, id int64) (models.Example, error)
+	exampleCore interface {
+		Execute(ctx context.Context, id int64) (*models.Example, error)
 	}
 )
 
-func (h *ExampleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+func NewExampleHandler(core exampleCore) *ExampleHandler {
+	return &ExampleHandler{core: core}
+}
+
+func (h *ExampleHandler) getByID(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("id must be an integer"))
-		return
+		return c.Status(http.StatusBadRequest).JSON(err)
 	}
-	m, err := h.core.Execute(r.Context(), int64(id))
+	resp, err := h.core.Execute(c.Context(), int64(id))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
+		return c.Status(http.StatusInternalServerError).JSON(err)
 	}
-	resp, err := json.Marshal(m)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	w.Write(resp)
-	w.WriteHeader(http.StatusOK)
+	return c.JSON(resp)
 }
